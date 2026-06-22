@@ -35,18 +35,21 @@ _BASE_PARAMS = {
         n_jobs=-1,
     ),
     "XGB": dict(
-        n_estimators=200,
-        learning_rate=0.1,
-        max_depth=5,
-        subsample=0.8,
-        colsample_bytree=0.8,
+        n_estimators=244,
+        learning_rate=0.085084,
+        max_depth=8,
+        subsample=0.676336,
+        colsample_bytree=0.707718,
+        min_child_weight=1,
+        scale_pos_weight=27.153399,
         random_state=42,
         eval_metric="aucpr",
     ),
     "CatBoost": dict(
-        iterations=500,
-        depth=6,
-        learning_rate=0.05,
+        iterations=535,
+        depth=5,
+        learning_rate=0.037576,
+        l2_leaf_reg=0.321827,
         random_seed=42,
         verbose=0,
     ),
@@ -65,13 +68,17 @@ def _add_class_weights(name: str, params: dict, y_train=None) -> dict:
     if name == "RF":
         p["class_weight"] = "balanced"
     elif name == "XGB":
-        if y_train is not None:
-            neg = np.sum(y_train == 0)
-            pos = np.sum(y_train == 1)
-            p["scale_pos_weight"] = neg / max(pos, 1)
-            logger.info("XGB scale_pos_weight = %.2f", p["scale_pos_weight"])
+        # Keep tuned scale_pos_weight if present, otherwise calculate based on y_train
+        if "scale_pos_weight" not in p:
+            if y_train is not None:
+                neg = np.sum(y_train == 0)
+                pos = np.sum(y_train == 1)
+                p["scale_pos_weight"] = neg / max(pos, 1)
+                logger.info("XGB scale_pos_weight = %.2f", p["scale_pos_weight"])
+            else:
+                p["scale_pos_weight"] = 577.0  # approximate ULB ratio
         else:
-            p["scale_pos_weight"] = 577.0  # approximate ULB ratio
+            logger.info("XGB keeping tuned scale_pos_weight = %.6f", p["scale_pos_weight"])
     elif name == "CatBoost":
         p["auto_class_weights"] = "Balanced"
     elif name == "LR":

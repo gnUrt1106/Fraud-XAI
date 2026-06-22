@@ -37,9 +37,19 @@ SUPPORTED_MODELS = [
     "LogisticRegression",
 ]
 
+GPU_MODELS = ["XGBClassifier", "CatBoostClassifier"]
+CPU_MODELS = ["RandomForestClassifier", "LogisticRegression"]
+
 
 def main(n_trials: int, model_name: str, data_path: str, patience: int):
-    models_to_tune = SUPPORTED_MODELS if model_name == "all" else [model_name]
+    if model_name == "all":
+        models_to_tune = SUPPORTED_MODELS
+    elif model_name == "gpu":
+        models_to_tune = GPU_MODELS
+    elif model_name == "cpu":
+        models_to_tune = CPU_MODELS
+    else:
+        models_to_tune = [model_name]
     
     logger.info("Loading data for hyperparameter tuning...")
     try:
@@ -93,8 +103,8 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--model", type=str, default="XGBClassifier",
-        choices=SUPPORTED_MODELS + ["all"],
-        help="Model to tune, or 'all' to tune all supported models",
+        choices=SUPPORTED_MODELS + ["all", "gpu", "cpu"],
+        help="Model to tune: specific model, 'all', 'gpu' (XGB & CatBoost), or 'cpu' (RF & LR)",
     )
     parser.add_argument(
         "--trials", type=int, default=20,

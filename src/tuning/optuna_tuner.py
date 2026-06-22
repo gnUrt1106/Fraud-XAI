@@ -184,6 +184,16 @@ def run_optimization(X, y, model_name="XGBClassifier", n_trials=20, patience=10)
     
     callbacks = [EarlyStoppingCallback(patience=patience)]
     
+    def logging_callback(study, trial):
+        val_str = f"{trial.value:.4f}" if trial.value is not None else "Pruned/Failed"
+        best_val_str = f"{study.best_value:.4f}" if study.best_value is not None else "None"
+        logger.info(
+            "Trial %d done | PR-AUC: %s | Best: %s",
+            trial.number, val_str, best_val_str
+        )
+    
+    callbacks.append(logging_callback)
+    
     study.optimize(
         lambda trial: objective(trial, X, y, model_name),
         n_trials=n_trials,

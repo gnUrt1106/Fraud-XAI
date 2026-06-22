@@ -28,9 +28,10 @@ logger = logging.getLogger(__name__)
 
 _BASE_PARAMS = {
     "RF": dict(
-        n_estimators=200,
-        min_samples_split=5,
-        min_samples_leaf=2,
+        n_estimators=185,
+        max_depth=17,
+        min_samples_split=18,
+        min_samples_leaf=5,
         random_state=42,
         n_jobs=-1,
     ),

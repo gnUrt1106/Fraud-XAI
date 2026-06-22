@@ -40,9 +40,9 @@ MODEL_COLORS = {
 }
 
 CONDITION_MARKERS = {
-    "C0": "o",
-    "C1": "s",
-    "C2": "D",
+    "Class-weighting": "o",
+    "SMOTE": "s",
+    "SMOTE-ENN": "D",
 }
 
 

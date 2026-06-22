@@ -22,16 +22,16 @@ logger = logging.getLogger(__name__)
 # ── Condition labels ─────────────────────────────────────────────────
 
 CONDITIONS = {
-    "C0": "Class-weight (no resampling)",
-    "C1": "SMOTE",
-    "C2": "SMOTE-ENN",
+    "Class-weighting": "Class-weighting (no resampling)",
+    "SMOTE": "SMOTE oversampling",
+    "SMOTE-ENN": "SMOTE-ENN hybrid",
 }
 
 
 def apply_condition(
     X_train,
     y_train,
-    condition: str = "C0",
+    condition: str = "Class-weighting",
     random_state: int = 42,
 ) -> tuple:
     """
@@ -40,34 +40,39 @@ def apply_condition(
     Args:
         X_train: Training features (DataFrame or ndarray).
         y_train: Training labels.
-        condition: One of 'C0', 'C1', 'C2'.
+        condition: One of 'Class-weighting', 'SMOTE', 'SMOTE-ENN'.
         random_state: Seed for reproducibility.
 
     Returns:
-        (X_resampled, y_resampled) — unchanged for C0.
+        (X_resampled, y_resampled) — unchanged for Class-weighting.
     """
-    condition = condition.upper()
+    # Normalize condition string to match CONDITIONS keys case-insensitively
+    matched_key = None
+    for k in CONDITIONS:
+        if k.lower() == condition.lower():
+            matched_key = k
+            break
 
-    if condition not in CONDITIONS:
+    if not matched_key:
         raise ValueError(
             f"Unknown condition '{condition}'. Choose from {list(CONDITIONS.keys())}"
         )
 
     _log_ratio("Before", y_train)
 
-    if condition == "C0":
+    if matched_key == "Class-weighting":
         logger.info(
-            "C0 — Class-weighting baseline: returning data unchanged. "
+            "Class-weighting baseline: returning data unchanged. "
             "Class weights will be set inside the model."
         )
         return X_train, y_train
 
-    elif condition == "C1":
-        logger.info("C1 — Applying SMOTE (random_state=%d)", random_state)
+    elif matched_key == "SMOTE":
+        logger.info("Applying SMOTE (random_state=%d)", random_state)
         sampler = SMOTE(random_state=random_state)
 
-    elif condition == "C2":
-        logger.info("C2 — Applying SMOTE-ENN (random_state=%d)", random_state)
+    elif matched_key == "SMOTE-ENN":
+        logger.info("Applying SMOTE-ENN (random_state=%d)", random_state)
         sampler = SMOTEENN(random_state=random_state)
 
     X_res, y_res = sampler.fit_resample(X_train, y_train)

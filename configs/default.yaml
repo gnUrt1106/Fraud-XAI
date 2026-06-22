@@ -61,6 +61,6 @@ models:
 
 # Conditions (imbalance handling)
 conditions:
-  - C0   # Class-weighting baseline
-  - C1   # SMOTE
-  - C2   # SMOTE-ENN
+  - Class-weighting
+  - SMOTE
+  - SMOTE-ENN

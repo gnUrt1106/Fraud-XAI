@@ -124,10 +124,10 @@ def get_model(
 
     params = (custom_params or _BASE_PARAMS[name]).copy()
 
-    # C0 → inject class-weight params; C1/C2 → data already balanced
-    if condition.upper() == "C0":
+    # Class-weighting → inject class-weight params; SMOTE/SMOTE-ENN → data already balanced
+    if condition.lower() == "class-weighting":
         params = _add_class_weights(name, params, y_train)
-        logger.info("%s [C0] — class-weighting enabled", name)
+        logger.info("%s [Class-weighting] — class-weighting enabled", name)
     else:
         logger.info("%s [%s] — no class-weighting (data resampled)", name, condition)
 

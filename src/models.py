@@ -55,6 +55,8 @@ _BASE_PARAMS = {
         verbose=0,
     ),
     "LR": dict(
+        C=0.000382,
+        penalty="l2",
         max_iter=1000,
         random_state=42,
     ),

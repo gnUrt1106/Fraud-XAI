@@ -64,6 +64,8 @@ class CIESEvaluator:
         sv = self.explainer.shap_values(X)
         if isinstance(sv, list):
             sv = sv[1]
+        elif isinstance(sv, np.ndarray) and sv.ndim == 3 and sv.shape[-1] == 2:
+            sv = sv[..., 1]
         return np.atleast_2d(sv)
 
     # ── Harmonic rank weights ────────────────────────────────────────

@@ -37,20 +37,37 @@ def load_and_split(
     """
     # Auto-detect Kaggle environment or fallback paths if data_path does not exist
     if not os.path.exists(data_path):
-        kaggle_paths = [
-            "/kaggle/input/creditcard/creditcard.csv",
-            "/kaggle/input/creditcardfraud/creditcard.csv",
-            "/kaggle/input/creditcard-fraud-detection/creditcard.csv",
-            "../input/creditcard/creditcard.csv",
-            "../input/creditcardfraud/creditcard.csv"
-        ]
         found = False
-        for kp in kaggle_paths:
-            if os.path.exists(kp):
-                logger.info("Auto-detected dataset at: %s", kp)
-                data_path = kp
-                found = True
-                break
+        
+        # 1. Try recursive search inside /kaggle/input first (most robust on Kaggle)
+        kaggle_input_dir = "/kaggle/input"
+        if os.path.exists(kaggle_input_dir):
+            for root, dirs, files in os.walk(kaggle_input_dir):
+                for f in files:
+                    if f.lower() == "creditcard.csv":
+                        data_path = os.path.join(root, f)
+                        logger.info("Auto-detected dataset via recursive search at: %s", data_path)
+                        found = True
+                        break
+                if found:
+                    break
+                    
+        # 2. Try static fallback paths if not found recursively
+        if not found:
+            kaggle_paths = [
+                "/kaggle/input/creditcard/creditcard.csv",
+                "/kaggle/input/creditcardfraud/creditcard.csv",
+                "/kaggle/input/creditcard-fraud-detection/creditcard.csv",
+                "../input/creditcard/creditcard.csv",
+                "../input/creditcardfraud/creditcard.csv"
+            ]
+            for kp in kaggle_paths:
+                if os.path.exists(kp):
+                    logger.info("Auto-detected dataset at: %s", kp)
+                    data_path = kp
+                    found = True
+                    break
+                    
         if not found:
             raise FileNotFoundError(
                 f"Dataset not found at '{data_path}'. "

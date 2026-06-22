@@ -30,7 +30,7 @@ if project_root not in sys.path:
 
 RESULTS_DIR = os.path.join(project_root, "outputs", "results")
 FIGURES_DIR = os.path.join(project_root, "outputs", "figures")
-CIES_ALERT_THRESHOLD = 0.75
+CIES_ALERT_THRESHOLD = 0.96
 
 st.set_page_config(
     page_title="CIES Dashboard — Credit Card Fraud",
@@ -127,6 +127,27 @@ def main():
         heatmap_path = os.path.join(FIGURES_DIR, "cies_heatmap.png")
         if os.path.exists(heatmap_path):
             st.image(heatmap_path, caption="CIES Heatmap (Model × Condition)")
+
+        # Analysis & Threshold Selection Rationale
+        st.markdown("---")
+        st.subheader("💡 Threshold Selection Rationale & CIES Analysis")
+        
+        col_rationale, col_std = st.columns(2)
+        with col_rationale:
+            st.markdown(
+                "**🎯 Data-Driven Threshold (0.96)**\n\n"
+                "Nhìn vào dữ liệu thực tế, có một điểm gãy tự nhiên (**Natural Break Point**) phân tách rõ rệt 2 nhóm:\n"
+                "* **Tier cao (Ổn định):** `LR (all)`, `CatBoost (all)`, `XGB Class-weighting` (đạt CIES_mean từ 0.976 – 0.993)\n"
+                "* **Tier thấp (Kém ổn định):** `XGB SMOTE-ENN` (0.958) và `XGB SMOTE` (0.954)\n\n"
+                "**Ý nghĩa:** Ngưỡng **0.96** phân tầng chính xác hai nhóm này, củng cố giả thuyết rằng kỹ thuật *synthetic resampling* làm giảm tính ổn định giải thích (SHAP stability) đối với mô hình XGBoost."
+            )
+        with col_std:
+            st.markdown(
+                "**⚠️ Vai trò quan trọng của Độ lệch chuẩn (CIES_std)**\n\n"
+                "* Dù chọn ngưỡng nào, việc kết hợp **CIES_std** vào phân tích là vô cùng cần thiết để giám sát vận hành.\n"
+                "* Cấu hình `XGB SMOTE` có CIES_mean = 0.954 (trông khá cao) nhưng **std = 0.070** (outlier rõ ràng).\n"
+                "* Độ lệch chuẩn lớn cảnh báo rằng các giải thích (SHAP values) kém nhất quán và kém tin cậy giữa các lần chạy đối với các điểm dữ liệu lân cận."
+            )
     else:
         st.info("CIES results not available. Re-run experiments without --skip-cies.")
 
@@ -166,8 +187,28 @@ def main():
             shap_values = config_data["shap_values"]
             feature_values = config_data["feature_values"]
             feature_names = config_data["feature_names"]
+
+            # Global SHAP Beeswarm Plot
+            st.write("---")
+            st.write(f"### 🐝 Global SHAP Beeswarm Plot — {selected_config}")
+            st.write("Biểu đồ phân phối giá trị SHAP của toàn bộ 100 mẫu thử nghiệm:")
             
+            import shap
+            import matplotlib.pyplot as plt
+
+            shap_arr = np.array(shap_values)
+            feat_arr = np.array(feature_values)
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            shap.summary_plot(shap_arr, feat_arr, feature_names=feature_names, show=False)
+            plt.title(f"SHAP Summary (Beeswarm) - {selected_config}", fontsize=14, pad=15)
+            plt.tight_layout()
+            st.pyplot(fig, clear_figure=True)
+            plt.close(fig)
+
             # Instance options
+            st.write("---")
+            st.write("### 🔍 Individual Instance Explorer")
             instance_options = [
                 f"Instance {i} (CIES Score: {cies_scores[i]:.3f})"
                 for i in range(len(cies_scores))
@@ -223,7 +264,7 @@ def main():
     threshold = st.slider(
         "CIES Alert Threshold",
         min_value=0.0, max_value=1.0,
-        value=CIES_ALERT_THRESHOLD, step=0.05,
+        value=CIES_ALERT_THRESHOLD, step=0.01,
     )
 
     if cies_details:

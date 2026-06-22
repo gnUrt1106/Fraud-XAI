@@ -71,12 +71,12 @@ def plot_cies_boxplot(
         data=df, x="Model", y="CIES", hue="Condition",
         palette="Set2", ax=ax, linewidth=1.5,
     )
-    ax.axhline(y=0.75, color="red", linestyle="--", alpha=0.6, label="Alert threshold (0.75)")
+    ax.axhline(y=0.96, color="red", linestyle="--", alpha=0.6, label="Alert threshold (0.96)")
     ax.set_title("CIES Distribution by Model × Condition", fontweight="bold", pad=15)
     ax.set_ylabel("CIES Score", fontweight="bold")
     ax.set_xlabel("Model", fontweight="bold")
     ax.legend(title="Condition", loc="lower left")
-    ax.set_ylim(-0.05, 1.05)
+    ax.set_ylim(0.4, 1.02)
 
     plt.tight_layout()
     os.makedirs(os.path.dirname(save_path), exist_ok=True)
@@ -119,7 +119,7 @@ def plot_accuracy_credibility_scatter(
     ax.set_xlabel("PR-AUC (Accuracy)", fontweight="bold")
     ax.set_ylabel("CIES (Credibility)", fontweight="bold")
     ax.set_title("Accuracy–Credibility Trade-off", fontweight="bold", pad=15)
-    ax.axhline(y=0.75, color="red", linestyle="--", alpha=0.4, label="CIES threshold")
+    ax.axhline(y=0.96, color="red", linestyle="--", alpha=0.4, label="CIES threshold")
     ax.legend()
     ax.grid(True, alpha=0.3)
 

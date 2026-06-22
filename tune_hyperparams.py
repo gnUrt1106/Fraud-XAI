@@ -38,7 +38,7 @@ SUPPORTED_MODELS = [
 ]
 
 
-def main(n_trials: int, model_name: str, data_path: str):
+def main(n_trials: int, model_name: str, data_path: str, patience: int):
     models_to_tune = SUPPORTED_MODELS if model_name == "all" else [model_name]
     
     logger.info("Loading data for hyperparameter tuning...")
@@ -62,6 +62,7 @@ def main(n_trials: int, model_name: str, data_path: str):
                 X_train_scaled, y_train,
                 model_name=name,
                 n_trials=n_trials,
+                patience=patience,
             )
             all_best_params[name] = best_params
         except Exception as e:
@@ -100,8 +101,12 @@ if __name__ == "__main__":
         help="Number of Optuna trials per model",
     )
     parser.add_argument(
+        "--patience", type=int, default=10,
+        help="Early stopping patience for Optuna (number of trials without improvement)",
+    )
+    parser.add_argument(
         "--data-path", type=str, default="data/raw/creditcard.csv",
         help="Path to creditcard.csv dataset",
     )
     args = parser.parse_args()
-    main(args.trials, args.model, args.data_path)
+    main(args.trials, args.model, args.data_path, args.patience)

@@ -38,39 +38,51 @@ SUPPORTED_MODELS = [
 ]
 
 
-def main(n_trials: int, model_name: str):
-    if model_name not in SUPPORTED_MODELS:
-        logger.error(
-            "Unsupported model '%s'. Choose from: %s",
-            model_name, SUPPORTED_MODELS,
-        )
+def main(n_trials: int, model_name: str, data_path: str):
+    models_to_tune = SUPPORTED_MODELS if model_name == "all" else [model_name]
+    
+    logger.info("Loading data for hyperparameter tuning...")
+    try:
+        X_train, X_test, y_train, y_test = load_and_split(data_path=data_path)
+    except Exception as e:
+        logger.error("Failed to load data: %s", str(e))
         return
 
-    logger.info("Loading data for hyperparameter tuning (%s)...", model_name)
-
-    X_train, X_test, y_train, y_test = load_and_split()
     X_train_scaled, _ = scale_features(X_train, X_test)
+    
+    all_best_params = {}
 
-    logger.info("Starting Optuna tuning on %s...", model_name)
-    best_params = run_optimization(
-        X_train_scaled, y_train,
-        model_name=model_name,
-        n_trials=n_trials,
-    )
+    for name in models_to_tune:
+        logger.info("\n" + "=" * 50)
+        logger.info("🚀 Starting Optuna tuning on %s...", name)
+        logger.info("=" * 50)
+        
+        try:
+            best_params = run_optimization(
+                X_train_scaled, y_train,
+                model_name=name,
+                n_trials=n_trials,
+            )
+            all_best_params[name] = best_params
+        except Exception as e:
+            logger.error("Error tuning %s: %s", name, str(e))
 
     logger.info("\n" + "=" * 50)
-    logger.info("🎉 OPTIMIZATION COMPLETE 🎉")
+    logger.info("🎉 ALL OPTIMIZATION TRIALS COMPLETE 🎉")
     logger.info("=" * 50)
-    logger.info("Best parameters for %s:", model_name)
-    for key, value in best_params.items():
-        if isinstance(value, float):
-            logger.info("    %s: %.6f", key, value)
-        else:
-            logger.info("    %s: %s", key, value)
+    
+    for name, params in all_best_params.items():
+        logger.info("Best parameters for %s:", name)
+        for key, value in params.items():
+            if isinstance(value, float):
+                logger.info("    %s: %.6f", key, value)
+            else:
+                logger.info("    %s: %s", key, value)
+        logger.info("-" * 30)
+    
     logger.info("=" * 50)
     logger.info(
-        "TIP: You can pass these as custom_params to src.models.get_model() "
-        "or update configs/default.yaml."
+        "TIP: Update configs/default.yaml or src/models.py with these best parameters."
     )
 
 
@@ -80,12 +92,16 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--model", type=str, default="XGBClassifier",
-        choices=SUPPORTED_MODELS,
-        help="Model to tune",
+        choices=SUPPORTED_MODELS + ["all"],
+        help="Model to tune, or 'all' to tune all supported models",
     )
     parser.add_argument(
         "--trials", type=int, default=20,
-        help="Number of Optuna trials",
+        help="Number of Optuna trials per model",
+    )
+    parser.add_argument(
+        "--data-path", type=str, default="data/raw/creditcard.csv",
+        help="Path to creditcard.csv dataset",
     )
     args = parser.parse_args()
-    main(args.trials, args.model)
+    main(args.trials, args.model, args.data_path)

@@ -35,11 +35,27 @@ def load_and_split(
     Returns:
         (X_train, X_test, y_train, y_test) as numpy arrays / pandas objects.
     """
+    # Auto-detect Kaggle environment or fallback paths if data_path does not exist
     if not os.path.exists(data_path):
-        raise FileNotFoundError(
-            f"Dataset not found at '{data_path}'. "
-            "Download from Kaggle: mlg-ulb/creditcardfraud"
-        )
+        kaggle_paths = [
+            "/kaggle/input/creditcard/creditcard.csv",
+            "/kaggle/input/creditcardfraud/creditcard.csv",
+            "/kaggle/input/creditcard-fraud-detection/creditcard.csv",
+            "../input/creditcard/creditcard.csv",
+            "../input/creditcardfraud/creditcard.csv"
+        ]
+        found = False
+        for kp in kaggle_paths:
+            if os.path.exists(kp):
+                logger.info("Auto-detected dataset at: %s", kp)
+                data_path = kp
+                found = True
+                break
+        if not found:
+            raise FileNotFoundError(
+                f"Dataset not found at '{data_path}'. "
+                "Download from Kaggle (mlg-ulb/creditcardfraud) or place it in data/raw/creditcard.csv"
+            )
 
     logger.info("Loading data from %s", data_path)
     df = pd.read_csv(data_path)

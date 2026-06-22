@@ -142,9 +142,7 @@ def run_single_config(
             random_state=42,
         )
 
-        cies_result = evaluator.evaluate(
-            X_test_scaled.values if hasattr(X_test_scaled, "values") else X_test_scaled
-        )
+        cies_result = evaluator.evaluate(X_test_scaled)
 
         # Save CIES result
         cies_path = os.path.join(RESULTS_DIR, f"{config_label}_cies.json")

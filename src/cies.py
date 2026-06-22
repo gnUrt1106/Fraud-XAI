@@ -123,25 +123,33 @@ class CIESEvaluator:
 
     # ── Model-level evaluation ───────────────────────────────────────
 
-    def evaluate(self, X_test: np.ndarray) -> dict:
+    def evaluate(self, X_test, feature_names=None) -> dict:
         """
         Compute CIES for N random instances from the test set.
 
         Returns dict with:
             cies_mean, cies_std, cies_min/max, quartiles,
             baseline_mean, wilcoxon_stat/p, significance flag,
-            raw cies_scores and baseline_scores.
+            raw cies_scores and baseline_scores,
+            and feature values, SHAP values, and feature names.
         """
         n = min(self.n_instances, len(X_test))
         idx = self.rng.choice(len(X_test), n, replace=False)
 
-        # Ensure numpy array
+        # Ensure numpy array and retrieve feature names if available
         if hasattr(X_test, "values"):
             X_sample = X_test.values[idx]
+            if feature_names is None:
+                feature_names = list(X_test.columns)
         elif hasattr(X_test, "iloc"):
             X_sample = X_test.iloc[idx].values
+            if feature_names is None:
+                feature_names = list(X_test.columns)
         else:
             X_sample = np.asarray(X_test)[idx]
+
+        if feature_names is None:
+            feature_names = [f"V{i}" for i in range(X_sample.shape[1])]
 
         # Batch SHAP (faster than per-instance)
         phi_all = self._get_shap(X_sample)
@@ -179,6 +187,9 @@ class CIESEvaluator:
             "cies_scores": cs.tolist(),
             "baseline_scores": bs.tolist(),
             "n_instances": n,
+            "feature_names": feature_names,
+            "feature_values": X_sample.tolist(),
+            "shap_values": phi_all.tolist(),
         }
 
         logger.info(

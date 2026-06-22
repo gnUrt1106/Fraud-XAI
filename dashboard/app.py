@@ -148,6 +148,75 @@ def main():
         else:
             st.info("Scatter plot not generated yet.")
 
+    # ── Interactive Instance Explorer ──
+    st.markdown("---")
+    st.subheader("🔍 Interactive SHAP & CIES Instance Explorer")
+    
+    if cies_details:
+        config_list = list(cies_details.keys())
+        selected_config = st.selectbox(
+            "Select Configuration to Explore Instances",
+            config_list,
+            key="explore_config"
+        )
+        
+        config_data = cies_details[selected_config]
+        if "shap_values" in config_data and "feature_values" in config_data:
+            cies_scores = config_data["cies_scores"]
+            shap_values = config_data["shap_values"]
+            feature_values = config_data["feature_values"]
+            feature_names = config_data["feature_names"]
+            
+            # Instance options
+            instance_options = [
+                f"Instance {i} (CIES Score: {cies_scores[i]:.3f})"
+                for i in range(len(cies_scores))
+            ]
+            selected_idx = st.selectbox(
+                "Select Instance to Visualize",
+                range(len(cies_scores)),
+                format_func=lambda x: instance_options[x],
+                key="explore_instance"
+            )
+            
+            inst_shap = shap_values[selected_idx]
+            inst_feat = feature_values[selected_idx]
+            
+            # Prepare DataFrame
+            inst_df = pd.DataFrame({
+                "Feature": feature_names,
+                "SHAP Value": inst_shap,
+                "Feature Value (Scaled)": inst_feat,
+                "Absolute Impact": np.abs(inst_shap)
+            })
+            
+            # Sort and take top 10
+            inst_df_sorted = inst_df.sort_values(by="Absolute Impact", ascending=False).head(10)
+            
+            st.write(f"#### Top 10 Contributing Features for Instance {selected_idx}")
+            
+            col_chart, col_table = st.columns([3, 2])
+            with col_chart:
+                chart_df = inst_df_sorted.set_index("Feature")[["SHAP Value"]]
+                st.bar_chart(chart_df)
+                st.caption("💡 positive values drive prediction toward FRAUD, negative drive toward LEGITIMATE")
+                
+            with col_table:
+                st.dataframe(
+                    inst_df_sorted[["Feature", "Feature Value (Scaled)", "SHAP Value"]].style.format({
+                        "Feature Value (Scaled)": "{:.4f}",
+                        "SHAP Value": "{:.4f}"
+                    }),
+                    use_container_width=True
+                )
+        else:
+            st.info(
+                "The selected configuration does not contain detailed SHAP data. "
+                "Re-run experiments to populate detailed logs."
+            )
+    else:
+        st.info("No detailed CIES results found. Run experiments first.")
+
     # ── Panel 4: Alert Log ───────────────────────────────────────────
     st.header("🚨 Panel 4 — Alert Log")
 

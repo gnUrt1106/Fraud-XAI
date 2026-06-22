@@ -141,6 +141,7 @@ def objective(trial, X, y, model_name):
                 "penalty": trial.suggest_categorical("penalty", ["l1", "l2"]),
                 "solver": "saga",  # supports both l1 and l2
                 "max_iter": 2000,
+                "tol": 1e-2,       # Increase tolerance to speed up convergence
                 "class_weight": trial.suggest_categorical(
                     "class_weight", ["balanced", None],
                 ),

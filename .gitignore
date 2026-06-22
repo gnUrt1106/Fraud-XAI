@@ -39,3 +39,9 @@ Thumbs.db
 *.pkl
 *.cbm
 *.npy
+
+# CatBoost info logs
+catboost_info/
+
+# Output scaler binaries
+outputs/scaler.pkl

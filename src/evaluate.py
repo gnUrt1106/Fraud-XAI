@@ -241,28 +241,3 @@ def save_result_json(
     logger.info("Result saved to %s", path)
 
 
-def log_experiment_result(config, metrics, save_dir="."):
-    """Append experiment result to the Markdown results history table."""
-    history_file = os.path.join(save_dir, "results_history.md")
-    file_exists = os.path.isfile(history_file)
-
-    model_name = config.get("model_name", config.get("model", {}).get("name", "Unknown"))
-    condition = config.get("condition", "N/A")
-
-    pr_auc = metrics.get("PR-AUC", 0)
-    f1 = metrics.get("F1", metrics.get("F1-Score", 0))
-    recall = metrics.get("Recall", 0)
-    roc_auc = metrics.get("ROC-AUC", 0)
-
-    if not file_exists:
-        with open(history_file, "w") as f:
-            f.write("# Experiment Results History\n\n")
-            f.write("| Model | Condition | PR-AUC | F1 | Recall | ROC-AUC |\n")
-            f.write("|---|---|---|---|---|---|\n")
-
-    with open(history_file, "a") as f:
-        f.write(
-            f"| {model_name} | {condition} "
-            f"| {pr_auc:.4f} | {f1:.4f} | {recall:.4f} | {roc_auc:.4f} |\n"
-        )
-    logger.info("Result appended to %s", history_file)

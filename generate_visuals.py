@@ -3,7 +3,7 @@
 Tái tạo toàn bộ visualizations từ outputs/results/ đã có.
 
 Chạy sau run_experiments.py hoặc bất cứ lúc nào muốn vẽ lại:
-    /Users/thetrung/venvs/general/bin/python generate_visuals.py
+    python generate_visuals.py
 """
 
 import json
@@ -143,7 +143,7 @@ def main():
     logger.info("=" * 60)
     logger.info("✅ Tất cả visualizations đã được tạo trong: %s", FIGURES_DIR)
     logger.info("=" * 60)
-    logger.info("Mở dashboard: /Users/thetrung/venvs/general/bin/python -m streamlit run dashboard/app.py")
+    logger.info("Mở dashboard: streamlit run dashboard/app.py")
 
 
 if __name__ == "__main__":

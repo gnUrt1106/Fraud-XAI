@@ -9,10 +9,10 @@ Dự án yêu cầu **Python 3.12** để tránh các lỗi không tương thíc
 
 ```bash
 # Tạo môi trường ảo
-python3.12 -m venv venv
+python3.12 -m venv .venv
 
 # Kích hoạt môi trường ảo
-source venv/bin/activate
+source .venv/bin/activate
 
 # Cài đặt các thư viện cần thiết
 pip install -r requirements.txt

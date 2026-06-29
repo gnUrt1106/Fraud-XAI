@@ -35,10 +35,8 @@ from src.cies import CIESEvaluator
 from src.visualize import (
     plot_cies_boxplot,
     plot_accuracy_credibility_scatter,
-    plot_sensitivity_analysis,
     plot_performance_comparison,
     plot_results_heatmap,
-    load_all_results,
 )
 
 logging.basicConfig(
@@ -51,11 +49,10 @@ logger = logging.getLogger(__name__)
 
 OUTPUTS_DIR = "outputs"
 MODELS_DIR = os.path.join(OUTPUTS_DIR, "models")
-SHAP_DIR = os.path.join(OUTPUTS_DIR, "shap_values")
 RESULTS_DIR = os.path.join(OUTPUTS_DIR, "results")
 FIGURES_DIR = os.path.join(OUTPUTS_DIR, "figures")
 
-for d in [MODELS_DIR, SHAP_DIR, RESULTS_DIR, FIGURES_DIR]:
+for d in [MODELS_DIR, RESULTS_DIR, FIGURES_DIR]:
     os.makedirs(d, exist_ok=True)
 
 

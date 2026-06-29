@@ -8,6 +8,9 @@ outputs/models/
 # Cached SHAP values
 outputs/shap_values/
 
+# Generated HTML reports
+outputs/*.html
+
 # Python
 __pycache__/
 *.pyc

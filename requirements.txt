@@ -19,6 +19,7 @@ scipy>=1.12
 # Visualization
 matplotlib>=3.8
 seaborn>=0.13
+plotly>=5.18
 
 # Dashboard (RQ3 proof-of-concept)
 streamlit>=1.35
@@ -31,6 +32,8 @@ pyyaml
 
 # Notebooks & EDA
 jupyter
+fg-data-profiling
+
 
 # Hyperparameter tuning
 optuna
